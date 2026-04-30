@@ -4,18 +4,11 @@ import axios from 'axios'
 import './index.css'
 import App from './App.jsx'
 
-// Temporary hardcoded API root to rule out Railway env var injection issues.
-const API_URL = 'https://cricplaybackend-production.up.railway.app/api'
+const API_HOST = (
+  import.meta.env.VITE_API_URL || 'https://cricplaybackend-production.up.railway.app'
+).replace(/\/api\/?$/, '').replace(/\/+$/, '')
 
-axios.defaults.baseURL = API_URL.replace(/\/+$/, '')
-
-axios.interceptors.request.use((config) => {
-  if (typeof config.url === 'string') {
-    config.url = config.url.replace(/^\/api\//, '/')
-  }
-
-  return config
-})
+axios.defaults.baseURL = API_HOST
 
 axios.defaults.headers.common.Accept = 'application/json'
 
