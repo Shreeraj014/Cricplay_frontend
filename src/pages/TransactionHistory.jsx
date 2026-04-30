@@ -13,7 +13,13 @@ const TransactionHistory = () => {
             const res = await axios.get('/api/transactions/', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setTxs(res.data);
+            setTxs(
+                Array.isArray(res.data)
+                    ? res.data
+                    : Array.isArray(res.data?.results)
+                        ? res.data.results
+                        : []
+            );
         };
 
         fetchTxs();
@@ -30,7 +36,7 @@ const TransactionHistory = () => {
                 </div>
 
                 <div className="space-y-3">
-                    {txs.map((tx) => (
+                    {txs?.map((tx) => (
                         <div key={tx.id} className="rounded-xl border border-gray-800 bg-[#121417] p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div className="flex min-w-0 items-start gap-3">

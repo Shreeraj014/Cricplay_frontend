@@ -677,7 +677,13 @@ const Dashboard = () => {
     const fetchMatches = async () => {
         try {
             const res = await axios.get('/api/matches/');
-            setMatches(res.data);
+            setMatches(
+                Array.isArray(res.data)
+                    ? res.data
+                    : Array.isArray(res.data?.results)
+                        ? res.data.results
+                        : []
+            );
             setLoading(false);
         } catch (err) {
             console.error("Error fetching matches:", err);
@@ -740,8 +746,11 @@ const Dashboard = () => {
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                         <div className="min-w-0 flex-1 space-y-4">
-                        {matches.map((match, index) => {
+                        {matches?.map((match, index) => {
                             const matchOverContext = getOverBettingContext(match.overs);
+                            const activeSessions = Array.isArray(match.sessions)
+                                ? match.sessions.filter((s) => !s.is_completed)
+                                : [];
 
                             return (
                             <div key={match.id} className="relative overflow-hidden rounded-xl border border-gray-800 bg-[#121417] shadow-lg">
@@ -802,7 +811,7 @@ const Dashboard = () => {
                                             </div>
                                             
                                             <div className="overflow-hidden rounded-xl border border-gray-800 bg-black/30">
-                                                {match.sessions && match.sessions.filter(s => !s.is_completed).map(s => (
+                                                {activeSessions?.map(s => (
                                                     <div key={s.id} className="relative border-b border-gray-800/50 last:border-0">
                                                         {s.is_locked && (
                                                             <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-[1px]">
@@ -838,7 +847,7 @@ const Dashboard = () => {
                                                     </div>
                                                 ))}
 
-                                                {(!match.sessions || match.sessions.filter(s => !s.is_completed).length === 0) && (
+                                                {activeSessions.length === 0 && (
                                                     <div className="p-4 text-center text-[10px] font-bold uppercase italic text-gray-500">
                                                         No active sessions for this match
                                                     </div>

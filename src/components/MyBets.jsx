@@ -39,7 +39,13 @@ const MyBets = () => {
                 const res = await axios.get('/api/my-bets/', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setBets(res.data);
+                setBets(
+                    Array.isArray(res.data)
+                        ? res.data
+                        : Array.isArray(res.data?.results)
+                            ? res.data.results
+                            : []
+                );
             } catch (err) {
                 console.error("API Error:", err);
                 setError("Failed to load bets.");
@@ -61,7 +67,7 @@ const MyBets = () => {
                     <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">No Active Bets</p>
                 </div>
             ) : (
-                bets.map(bet => (
+                bets?.map(bet => (
                     <div key={bet.id} className="bg-cric-dark border border-gray-800 rounded-lg p-4 shadow-lg relative overflow-hidden group">
                         
                         {/* Status Indicator Bar (Left Side) */}

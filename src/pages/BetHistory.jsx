@@ -15,7 +15,13 @@ const BetHistory = () => {
                 const res = await axios.get('/api/my-bets/', {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-                setBets(res.data);
+                setBets(
+                    Array.isArray(res.data)
+                        ? res.data
+                        : Array.isArray(res.data?.results)
+                            ? res.data.results
+                            : []
+                );
             } catch (err) {
                 console.error('Error fetching bets');
             } finally {
@@ -56,7 +62,7 @@ const BetHistory = () => {
                                 No bets placed yet.
                             </div>
                         ) : (
-                            bets.map((bet) => (
+                            bets?.map((bet) => (
                                 <div key={bet.id} className="rounded-2xl border border-gray-800 bg-[#121417] p-4 shadow-lg sm:p-5">
                                     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                                         <div className="min-w-0">

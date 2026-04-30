@@ -13,7 +13,13 @@ const DepositRequestList = () => {
             const res = await axios.get('/api/my-deposits/', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setRequests(res.data);
+            setRequests(
+                Array.isArray(res.data)
+                    ? res.data
+                    : Array.isArray(res.data?.results)
+                        ? res.data.results
+                        : []
+            );
         };
 
         fetchRequests();
@@ -30,7 +36,7 @@ const DepositRequestList = () => {
                 </div>
 
                 <div className="space-y-4">
-                    {requests.map((req) => (
+                    {requests?.map((req) => (
                         <div key={req.id} className="rounded-2xl border border-gray-800 bg-[#121417] p-4 sm:p-5">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div>

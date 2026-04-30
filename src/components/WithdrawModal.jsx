@@ -30,7 +30,13 @@ const WithdrawModal = ({ isOpen, onClose }) => {
         axios.get('/api/my-bank-accounts/', {
             headers: { Authorization: `Bearer ${token}` }
         })
-        .then(res => setSavedAccounts(res.data))
+        .then((res) => setSavedAccounts(
+            Array.isArray(res.data)
+                ? res.data
+                : Array.isArray(res.data?.results)
+                    ? res.data.results
+                    : []
+        ))
         .catch(err => console.log("Fetch Banks Error:", err));
     };
 
@@ -104,7 +110,7 @@ const WithdrawModal = ({ isOpen, onClose }) => {
                         <div className="space-y-6">
                             {/* Saved Accounts Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {savedAccounts.map(acc => (
+                                {savedAccounts?.map(acc => (
                                     <div 
                                         key={acc.id}
                                         onClick={() => setSelectedAccount(acc.id)}

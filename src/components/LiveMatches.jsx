@@ -9,7 +9,13 @@ const LiveMatches = () => {
         const fetchMatches = async () => {
             try {
                 const res = await axios.get('/api/matches/');
-                setMatches(res.data);
+                setMatches(
+                    Array.isArray(res.data)
+                        ? res.data
+                        : Array.isArray(res.data?.results)
+                            ? res.data.results
+                            : []
+                );
             } catch (err) {
                 console.error("API Error:", err);
             }
@@ -21,7 +27,7 @@ const LiveMatches = () => {
 
     return (
         <div className="space-y-4 pb-10">
-            {matches.map(match => (
+            {matches?.map(match => (
                 <div key={match.id} className="bg-cric-dark border border-gray-800 rounded-xl overflow-hidden shadow-2xl transition-all">
                     
                     {/* Header: League & Live Indicator */}
@@ -127,7 +133,7 @@ const LiveMatches = () => {
                 </div>
             ))}
             
-            {matches.length === 0 && (
+            {matches?.length === 0 && (
                 <div className="text-center py-20 bg-cric-dark rounded-xl border border-dashed border-gray-800">
                     <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">Searching for Live Feeds...</p>
                 </div>
