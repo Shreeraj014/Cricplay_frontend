@@ -11,7 +11,9 @@ const apiBaseUrl =
     ? 'https://cricplaybackend-production.up.railway.app'
     : 'http://127.0.0.1:8000')
 
-axios.defaults.baseURL = apiBaseUrl.replace(/\/+$/, '')
+const normalizedApiBaseUrl = apiBaseUrl.replace(/\/+$/, '').replace(/\/api$/, '')
+
+axios.defaults.baseURL = normalizedApiBaseUrl
 axios.defaults.headers.common.Accept = 'application/json'
 
 createRoot(document.getElementById('root')).render(
