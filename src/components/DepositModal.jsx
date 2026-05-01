@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { X, Copy } from 'lucide-react';
 import axios from 'axios';
 
-const METHOD_TABS = ['BANK', 'UPI', 'CRYPTO', 'WHATSAPP'];
+const METHOD_TABS = ['BANK', 'UPI', 'CRYPTO'];
 const BANK_TRANSFER_TYPES = ['IMPS', 'NEFT', 'RTGS'];
+const TELEGRAM_SUPPORT_URL = 'https://t.me/CricPlay_Official';
 
 const normalizeMethod = (value) => String(value || '').toUpperCase();
 
@@ -103,7 +104,9 @@ const DepositModal = ({ isOpen, onClose }) => {
 
                 setPaymentMethods(methods);
 
-                const initialMethod = methods.find((item) => normalizeMethod(item.method_type || item.method) === 'BANK') || methods[0] || null;
+                const initialMethod = methods.find((item) => normalizeMethod(item.method_type || item.method) === 'BANK')
+                    || methods.find((item) => METHOD_TABS.includes(normalizeMethod(item.method_type || item.method)))
+                    || null;
                 const initialTab = initialMethod ? normalizeMethod(initialMethod.method_type || initialMethod.method) : 'BANK';
 
                 setActiveTab(initialTab);
@@ -280,6 +283,17 @@ const DepositModal = ({ isOpen, onClose }) => {
                                         </button>
                                     );
                                 })}
+                                <a
+                                    href={TELEGRAM_SUPPORT_URL}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="flex items-center justify-center gap-1 rounded-md border border-[#0088cc]/30 bg-[#0088cc]/10 px-3 py-2 text-[10px] font-bold uppercase text-[#0088cc] transition-all hover:bg-[#0088cc]/20 active:scale-95"
+                                >
+                                    <svg viewBox="0 0 24 24" className="h-3 w-3 fill-current" aria-hidden="true">
+                                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18.717-.962 4.084-1.362 5.441-.168.572-.372.763-.576.782-.449.041-.789-.297-1.224-.582-.68-.446-1.064-.722-1.724-1.157-.763-.502-.269-.778.167-1.229.114-.118 2.086-1.914 2.124-2.077.005-.02.009-.096-.037-.137s-.112-.027-.161-.016c-.07.015-1.18.75-3.327 2.196-.315.216-.599.322-.852.317-.278-.006-.814-.157-1.212-.287-.488-.16-1.156-.245-1.122-.517.018-.142.214-.287.589-.436 2.311-1.006 3.851-1.67 4.622-1.991 2.2-.912 2.656-1.07 2.954-1.075.066-.001.213.016.309.094.08.066.103.155.107.224.004.07.001.219-.015.362z" />
+                                    </svg>
+                                    Support
+                                </a>
                             </div>
 
                             <p className="text-xs italic text-red-400">
