@@ -653,6 +653,7 @@ const MatchMicroBets = ({ match, handleOddsClick }) => {
 const Dashboard = () => {
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeCategory, setActiveCategory] = useState('match_winner');
 
     const [betSlipConfig, setBetSlipConfig] = useState({
         isOpen: false,
@@ -722,32 +723,34 @@ const Dashboard = () => {
                 </div>
             ) : (
                 <>
-                    {/* QUICK NAVIGATION HUB */}
-                    <div className="grid grid-cols-3 gap-2 pb-4 sm:flex sm:overflow-x-auto">
+                    <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
                         <button
-                            onClick={() => document.getElementById('match-winner')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-blue-500 bg-blue-600/20 px-2 py-2 text-center text-[10px] font-black uppercase text-blue-400 sm:min-h-0 sm:whitespace-nowrap sm:rounded-full sm:px-3 sm:text-[11px]"
+                            onClick={() => setActiveCategory('match_winner')}
+                            className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                                activeCategory === 'match_winner'
+                                    ? 'border border-blue-500 bg-[#0f172a] text-blue-400'
+                                    : 'border border-gray-700 bg-transparent text-gray-400 hover:border-gray-500'
+                            }`}
                         >
-                            <Trophy className="w-3 h-3" /> Match Winner
+                            <Trophy className="h-4 w-4" />
+                            MATCH WINNER
                         </button>
                         <button
-                            onClick={() => document.getElementById('over-sessions')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-purple-500 bg-purple-600/20 px-2 py-2 text-center text-[10px] font-black uppercase text-purple-400 sm:min-h-0 sm:whitespace-nowrap sm:rounded-full sm:px-3 sm:text-[11px]"
+                            onClick={() => setActiveCategory('sessions')}
+                            className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                                activeCategory === 'sessions'
+                                    ? 'border border-purple-500 bg-[#2e1065] text-purple-400'
+                                    : 'border border-gray-700 bg-transparent text-gray-400 hover:border-gray-500'
+                            }`}
                         >
-                            <HelpCircle className="w-3 h-3" /> Sessions
-                        </button>
-                        <button
-                            onClick={() => document.getElementById('micro-bets')?.scrollIntoView({ behavior: 'smooth' })}
-                            className="flex min-h-[52px] items-center justify-center gap-1.5 rounded-2xl border border-yellow-500 bg-yellow-600/20 px-2 py-2 text-center text-[10px] font-black uppercase text-yellow-400 sm:min-h-0 sm:whitespace-nowrap sm:rounded-full sm:px-3 sm:text-[11px]"
-                        >
-                            <Zap className="w-3 h-3" /> Micro Predictions
+                            <Clock className="h-4 w-4" />
+                            SESSIONS
                         </button>
                     </div>
 
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                         <div className="min-w-0 flex-1 space-y-4">
-                        {matches?.map((match, index) => {
-                            const matchOverContext = getOverBettingContext(match.overs);
+                        {matches?.map((match) => {
                             const activeSessions = Array.isArray(match.sessions)
                                 ? match.sessions.filter((s) => !s.is_completed)
                                 : [];
@@ -778,86 +781,88 @@ const Dashboard = () => {
                                                     <p className="font-mono text-xs text-gray-500 sm:text-sm">{new Date(match.match_time).toLocaleString()}</p>
                                                 )}
                                             </div>
-
-                                            <div className="rounded-xl border border-green-500/20 bg-green-500/10 p-4 text-center">
-                                                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-green-300">Predicting For Over</p>
-                                                <p className="mt-1 text-2xl font-black text-white">{matchOverContext.targetOver}</p>
-                                                <p className="mt-1 text-[10px] font-bold leading-relaxed text-green-100/75">
-                                                    {matchOverContext.isNextOverLocked
-                                                        ? `Over ${matchOverContext.lockedOver} is locked on the 6th ball.`
-                                                        : `Live over ${matchOverContext.liveOverLabel}. Next entry moves to Over ${matchOverContext.targetOver}.`}
-                                                </p>
-                                            </div>
-
-                                            <div id={index === 0 ? 'match-winner' : undefined} className="space-y-2">
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Match Winner</p>
-                                                <div className="flex flex-col gap-2">
-                                                    <button onClick={() => handleOddsClick(match, `${match.team1_name} to Win`, match.team1_odds)} className="flex items-center justify-between rounded bg-[#72bbed] px-3 py-3 font-black text-black transition-all active:scale-95 hover:bg-[#5daee3] sm:px-4">
-                                                        <span className="mr-2 truncate text-sm sm:text-base">{match.team1_name}</span><span className="font-mono text-base sm:text-lg">{parseFloat(match.team1_odds).toFixed(2)}</span>
-                                                    </button>
-                                                    <button onClick={() => handleOddsClick(match, `${match.team2_name} to Win`, match.team2_odds)} className="flex items-center justify-between rounded bg-[#faa9ba] px-3 py-3 font-black text-black transition-all active:scale-95 hover:bg-[#f992a7] sm:px-4">
-                                                        <span className="mr-2 truncate text-sm sm:text-base">{match.team2_name}</span><span className="font-mono text-base sm:text-lg">{parseFloat(match.team2_odds).toFixed(2)}</span>
-                                                    </button>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
 
                                     <div className="min-w-0 flex-1 p-3 sm:p-5 lg:max-h-[calc(100vh-9.5rem)] lg:overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                                        <div id={index === 0 ? 'over-sessions' : undefined} className="mb-8 scroll-mt-24 sm:mb-10">
-                                            <div className="mb-3 flex items-end justify-between gap-3 border-l-4 border-purple-600 pl-2 tracking-widest">
-                                                <p className="text-[10px] font-black uppercase text-purple-400">Live Sessions</p>
-                                                <span className="text-[8px] font-bold uppercase italic text-gray-500">Real-time update</span>
+                                        {activeCategory === 'match_winner' && (
+                                            <div className="rounded-xl border border-gray-800 bg-[#1e1e24] p-4">
+                                                <div className="mb-4 flex items-end justify-between gap-3 border-l-4 border-blue-500 pl-2">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Match Winner</p>
+                                                    <span className="text-[8px] font-bold uppercase italic text-gray-500">Primary market</span>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <button
+                                                        onClick={() => handleOddsClick(match, `${match.team1_name} to Win`, match.team1_odds)}
+                                                        className="flex w-full items-center justify-between rounded-md bg-[#72bbed] px-4 py-3 font-bold text-black transition-all hover:bg-[#5daee3] active:scale-95"
+                                                    >
+                                                        <span className="mr-2 truncate">{match.team1_name}</span>
+                                                        <span>{parseFloat(match.team1_odds || 1.9).toFixed(2)}</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleOddsClick(match, `${match.team2_name} to Win`, match.team2_odds)}
+                                                        className="flex w-full items-center justify-between rounded-md bg-[#faa9ba] px-4 py-3 font-bold text-black transition-all hover:bg-[#f992a7] active:scale-95"
+                                                    >
+                                                        <span className="mr-2 truncate">{match.team2_name}</span>
+                                                        <span>{parseFloat(match.team2_odds || 1.9).toFixed(2)}</span>
+                                                    </button>
+                                                </div>
                                             </div>
-                                            
-                                            <div className="overflow-hidden rounded-xl border border-gray-800 bg-black/30">
-                                                {activeSessions?.map(s => (
-                                                    <div key={s.id} className="relative border-b border-gray-800/50 last:border-0">
-                                                        {s.is_locked && (
-                                                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-[1px]">
-                                                                <span className="flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-[9px] font-black uppercase text-white shadow-lg">
-                                                                    <Lock className="h-3 w-3"/> Session Closed
-                                                                </span>
-                                                            </div>
-                                                        )}
+                                        )}
 
-                                                        <div className="flex flex-col sm:flex-row">
-                                                            <div className="flex min-h-0 flex-1 items-center px-3 py-3 text-[11px] font-bold text-white sm:px-4">
-                                                                {s.question_text}
-                                                            </div>
+                                        {activeCategory === 'sessions' && (
+                                            <div className="rounded-xl border border-gray-800 border-l-2 border-l-purple-500 bg-[#1e1e24] p-4">
+                                                <div className="mb-3 flex items-end justify-between gap-3 border-l-4 border-purple-600 pl-2 tracking-widest">
+                                                    <p className="text-[10px] font-black uppercase text-purple-400">Live Sessions</p>
+                                                    <span className="text-[8px] font-bold uppercase italic text-gray-500">Real-time update</span>
+                                                </div>
 
-                                                            <div className="grid grid-cols-2 border-t border-gray-800 sm:flex sm:border-l sm:border-t-0">
-                                                                <button
-                                                                    disabled={s.is_locked}
-                                                                    onClick={() => handleOddsClick(match, `NO: ${s.question_text}`, s.no_odds, 'SESSION_NO')}
-                                                                    className="min-h-[48px] bg-pink-500/10 font-mono font-black text-pink-400 transition-all active:scale-95 disabled:cursor-not-allowed hover:bg-pink-500/20 sm:w-[76px] sm:border-r sm:border-gray-800"
-                                                                >
-                                                                    {s.no_odds}
-                                                                </button>
+                                                <div className="overflow-hidden rounded-xl border border-gray-800 bg-black/30">
+                                                    {activeSessions?.map(s => (
+                                                        <div key={s.id} className="relative border-b border-gray-800/50 last:border-0">
+                                                            {s.is_locked && (
+                                                                <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-[1px]">
+                                                                    <span className="flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-[9px] font-black uppercase text-white shadow-lg">
+                                                                        <Lock className="h-3 w-3"/> Session Closed
+                                                                    </span>
+                                                                </div>
+                                                            )}
 
-                                                                <button
-                                                                    disabled={s.is_locked}
-                                                                    onClick={() => handleOddsClick(match, `YES: ${s.question_text}`, s.yes_odds, 'SESSION_YES')}
-                                                                    className="min-h-[48px] border-l border-gray-800 bg-blue-500/10 font-mono font-black text-blue-400 transition-all active:scale-95 disabled:cursor-not-allowed hover:bg-blue-500/20 sm:w-[76px] sm:border-l-0"
-                                                                >
-                                                                    {s.yes_odds}
-                                                                </button>
+                                                            <div className="flex flex-col sm:flex-row">
+                                                                <div className="flex min-h-0 flex-1 items-center px-3 py-3 text-[11px] font-bold text-white sm:px-4">
+                                                                    {s.question_text}
+                                                                </div>
+
+                                                                <div className="grid grid-cols-2 border-t border-gray-800 sm:flex sm:border-l sm:border-t-0">
+                                                                    <button
+                                                                        disabled={s.is_locked}
+                                                                        onClick={() => handleOddsClick(match, `NO: ${s.question_text}`, s.no_odds, 'SESSION_NO')}
+                                                                        className="min-h-[48px] bg-pink-500/10 font-mono font-black text-pink-400 transition-all active:scale-95 hover:bg-pink-500/20 disabled:cursor-not-allowed sm:w-[76px] sm:border-r sm:border-gray-800"
+                                                                    >
+                                                                        {s.no_odds}
+                                                                    </button>
+
+                                                                    <button
+                                                                        disabled={s.is_locked}
+                                                                        onClick={() => handleOddsClick(match, `YES: ${s.question_text}`, s.yes_odds, 'SESSION_YES')}
+                                                                        className="min-h-[48px] border-l border-gray-800 bg-blue-500/10 font-mono font-black text-blue-400 transition-all active:scale-95 hover:bg-blue-500/20 disabled:cursor-not-allowed sm:w-[76px] sm:border-l-0"
+                                                                    >
+                                                                        {s.yes_odds}
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
 
-                                                {activeSessions.length === 0 && (
-                                                    <div className="p-4 text-center text-[10px] font-bold uppercase italic text-gray-500">
-                                                        No active sessions for this match
-                                                    </div>
-                                                )}
+                                                    {activeSessions.length === 0 && (
+                                                        <div className="p-6 text-center text-[10px] font-bold uppercase italic text-gray-500">
+                                                            No active sessions for this match
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div id={index === 0 ? 'micro-bets' : undefined} className="border-t border-gray-800 pt-2">
-                                            <MatchMicroBets match={match} handleOddsClick={handleOddsClick} />
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
