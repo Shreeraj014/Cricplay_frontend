@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
-import { LogOut, Shield, ChevronLeft, PlusCircle, MinusCircle } from 'lucide-react';
+import { LogOut, Shield, ChevronLeft, PlusCircle, MinusCircle, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DepositModal from '../components/DepositModal';
 import WithdrawModal from '../components/WithdrawModal';
 import BottomNav from '../components/BottomNav';
 
+const formatCurrency = (value) => {
+    const amount = Number.parseFloat(value);
+    return Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
+};
+
 const AccountSettings = () => {
     const navigate = useNavigate();
     const [isDepositOpen, setIsDepositOpen] = useState(false);
     const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
-    const [user, setUser] = useState(() => {
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState(() => {
         const storedUsername = localStorage.getItem('username') || 'User';
 
         return {
@@ -18,6 +24,9 @@ const AccountSettings = () => {
             first_name: '',
             last_name: '',
             full_name: storedUsername,
+            balance: 0,
+            exposure: 0,
+            bonus: 0,
         };
     });
 
@@ -25,6 +34,7 @@ const AccountSettings = () => {
         const token = localStorage.getItem('access_token') || localStorage.getItem('token');
 
         if (!token) {
+            setLoading(false);
             return undefined;
         }
 
@@ -47,14 +57,21 @@ const AccountSettings = () => {
                     || `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
                     || fallbackName;
 
-                setUser({
+                setProfile({
                     username: fallbackName,
                     first_name: profile.first_name || '',
                     last_name: profile.last_name || '',
                     full_name: fullName,
+                    balance: Number.parseFloat(profile.balance || 0),
+                    exposure: Number.parseFloat(profile.exposure || 0),
+                    bonus: Number.parseFloat(profile.bonus || 0),
                 });
             } catch (error) {
                 console.error('Error fetching user data:', error.response?.data || error.message);
+            } finally {
+                if (!isCancelled) {
+                    setLoading(false);
+                }
             }
         }, 0);
 
@@ -64,7 +81,7 @@ const AccountSettings = () => {
         };
     }, []);
 
-    const displayName = user.full_name || user.username || 'User';
+    const displayName = profile.full_name || profile.username || 'User';
     const avatarLabel = displayName.charAt(0).toUpperCase() || 'U';
 
     const handleLogout = () => {
@@ -90,6 +107,33 @@ const AccountSettings = () => {
                         <div className="min-w-0">
                             <p className="truncate text-sm font-black uppercase tracking-wide sm:text-base">{displayName}</p>
                             <p className="text-xs text-gray-500">Verified User</p>
+                        </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-gray-800 bg-gradient-to-br from-[#121417] via-[#171a20] to-[#1b2230] p-5 shadow-[0_18px_40px_rgba(0,0,0,0.25)] sm:p-6">
+                        <div className="mb-4 flex items-center justify-center gap-2 text-gray-500">
+                            <Wallet className="h-4 w-4 text-[#22c55e]" />
+                            <p className="text-[10px] font-black uppercase tracking-[0.22em]">Available Balance</p>
+                        </div>
+                        <div className="flex items-end justify-center gap-2">
+                            <span className="pb-1 font-mono text-xl font-bold text-gray-400 sm:text-2xl">Rs</span>
+                            <h2 className="font-mono text-4xl font-black tracking-tight text-white sm:text-5xl">
+                                {loading ? '...' : formatCurrency(profile.balance)}
+                            </h2>
+                        </div>
+                        <div className="mt-5 grid grid-cols-2 gap-3">
+                            <div className="rounded-xl border border-gray-800/80 bg-black/20 px-4 py-3 text-center">
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Exposure</p>
+                                <p className="mt-1 font-mono text-sm font-black text-red-400 sm:text-base">
+                                    Rs {formatCurrency(profile.exposure)}
+                                </p>
+                            </div>
+                            <div className="rounded-xl border border-gray-800/80 bg-black/20 px-4 py-3 text-center">
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-500">Bonus</p>
+                                <p className="mt-1 font-mono text-sm font-black text-yellow-300 sm:text-base">
+                                    Rs {formatCurrency(profile.bonus)}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
