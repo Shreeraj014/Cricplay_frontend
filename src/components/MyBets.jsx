@@ -1,124 +1,162 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle } from 'lucide-react';
+
+const formatCurrency = (value) => {
+    const amount = Number.parseFloat(value);
+    return Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
+};
 
 const MyBets = () => {
     const [bets, setBets] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState('');
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchMyBets = async () => {
-            try {
-                const token = localStorage.getItem('access_token'); 
-                
-                if (!token) {
-                    setError("Please login to view your bets.");
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+
+            if (!token) {
+                if (isMounted) {
+                    setError('Please login to view your bets.');
                     setLoading(false);
-                    return;
                 }
+                return;
+            }
 
-                // ==========================================
-                // TEST MODE BYPASS: Load Mock Data!
-                // ==========================================
-                if (token === 'fake_test_token_123') {
-                    console.log("Loading Test Bets...");
-                    setTimeout(() => {
-                        setBets([
-                            { id: 1, match_title: 'CSK vs RCB', market_type: 'Match Winner', amount_staked: '5000.00', potential_return: '9500.00', status: 'PENDING', created_at: new Date().toISOString() },
-                            { id: 2, match_title: 'MI vs DC', market_type: '6 Over Session Runs', amount_staked: '1000.00', potential_return: '1900.00', status: 'WON', created_at: new Date(Date.now() - 86400000).toISOString() },
-                            { id: 3, match_title: 'KKR vs SRH', market_type: 'Fall of 1st Wicket', amount_staked: '2500.00', potential_return: '0.00', status: 'LOST', created_at: new Date(Date.now() - 172800000).toISOString() },
-                        ]);
-                        setLoading(false);
-                    }, 800); // Fake a slight loading delay for realism
-                    return;
-                }
-                // ==========================================
-
-                // Real Backend Logic (For later)
-                const res = await axios.get('/api/my-bets/', {
-                    headers: { Authorization: `Bearer ${token}` }
+            try {
+                const response = await axios.get('/api/my-bets/', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
+
+                if (!isMounted) {
+                    return;
+                }
+
                 setBets(
-                    Array.isArray(res.data)
-                        ? res.data
-                        : Array.isArray(res.data?.results)
-                            ? res.data.results
+                    Array.isArray(response.data)
+                        ? response.data
+                        : Array.isArray(response.data?.results)
+                            ? response.data.results
                             : []
                 );
+                setError('');
             } catch (err) {
-                console.error("API Error:", err);
-                setError("Failed to load bets.");
+                if (!isMounted) {
+                    return;
+                }
+
+                console.error('Error fetching bets:', err.response?.data || err.message);
+                setError(
+                    err.response?.status === 401
+                        ? 'Your session has expired. Please log out and log back in to continue.'
+                        : 'Failed to load bets.'
+                );
             } finally {
-                if (token !== 'fake_test_token_123') setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchMyBets();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    if (loading) return <div className="text-center text-gray-500 py-10 font-mono text-sm animate-pulse">Loading Slip...</div>;
-    if (error) return <div className="text-center text-red-500 py-10 font-bold bg-red-900/10 rounded-lg border border-red-900/30">{error}</div>;
+    if (loading) {
+        return <div className="py-10 text-center font-mono text-sm text-gray-500 animate-pulse">Loading Slip...</div>;
+    }
+
+    if (error) {
+        return <div className="rounded-lg border border-red-900/30 bg-red-900/10 py-10 text-center font-bold text-red-500">{error}</div>;
+    }
 
     return (
         <div className="space-y-3 pb-20 lg:pb-0">
             {bets.length === 0 ? (
-                <div className="text-center py-16 bg-cric-dark rounded-xl border border-dashed border-gray-800">
-                    <p className="text-gray-500 font-bold uppercase tracking-widest text-sm">No Active Bets</p>
+                <div className="rounded-xl border border-dashed border-gray-800 bg-cric-dark py-16 text-center">
+                    <p className="text-sm font-bold uppercase tracking-widest text-gray-500">No Recent Bets Found</p>
                 </div>
             ) : (
-                bets?.map(bet => (
-                    <div key={bet.id} className="bg-cric-dark border border-gray-800 rounded-lg p-4 shadow-lg relative overflow-hidden group">
-                        
-                        {/* Status Indicator Bar (Left Side) */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                            bet.status === 'WON' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]' : 
-                            bet.status === 'LOST' ? 'bg-red-600' : 
-                            'bg-yellow-500'
-                        }`}></div>
+                bets.map((bet) => {
+                    const normalizedStatus = String(bet.status || '').toUpperCase();
 
-                        <div className="flex justify-between items-start pl-2">
-                            <div>
-                                <h4 className="text-white font-black text-sm uppercase tracking-tight">
-                                    {bet.match_title}
-                                </h4>
-                                <div className="flex items-center mt-1 space-x-2">
-                                    <span className="bg-gray-800 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                                        {bet.market_type}
-                                    </span>
-                                    <span className="text-gray-500 text-[10px]">
-                                        {new Date(bet.created_at).toLocaleString([], {month: 'short', day: 'numeric'})}
-                                    </span>
+                    return (
+                        <div key={bet.id} className="group relative overflow-hidden rounded-lg border border-gray-800 bg-cric-dark p-4 shadow-lg">
+                            <div
+                                className={`absolute bottom-0 left-0 top-0 w-1 ${
+                                    normalizedStatus === 'WON'
+                                        ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]'
+                                        : normalizedStatus === 'LOST'
+                                            ? 'bg-red-600'
+                                            : 'bg-yellow-500'
+                                }`}
+                            />
+
+                            <div className="flex justify-between items-start pl-2">
+                                <div>
+                                    <h4 className="text-sm font-black uppercase tracking-tight text-white">
+                                        {bet.match_title}
+                                    </h4>
+                                    <div className="mt-1 flex items-center space-x-2">
+                                        <span className="rounded bg-gray-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-300">
+                                            {bet.market_type}
+                                        </span>
+                                        <span className="text-[10px] text-gray-500">
+                                            {new Date(bet.created_at).toLocaleString([], { month: 'short', day: 'numeric' })}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center">
+                                    {normalizedStatus === 'PENDING' && (
+                                        <span className="flex items-center text-[10px] font-bold uppercase tracking-widest text-yellow-500">
+                                            <Clock className="mr-1 h-3 w-3" /> Pending
+                                        </span>
+                                    )}
+                                    {normalizedStatus === 'WON' && (
+                                        <span className="flex items-center text-[10px] font-black uppercase tracking-widest text-green-500">
+                                            <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Won
+                                        </span>
+                                    )}
+                                    {normalizedStatus === 'LOST' && (
+                                        <span className="flex items-center text-[10px] font-bold uppercase tracking-widest text-red-500">
+                                            <XCircle className="mr-1 h-3.5 w-3.5" /> Lost
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Status Badge */}
-                            <div className="flex items-center">
-                                {bet.status === 'PENDING' && <span className="flex items-center text-yellow-500 text-[10px] font-bold uppercase tracking-widest"><Clock className="w-3 h-3 mr-1" /> Pending</span>}
-                                {bet.status === 'WON' && <span className="flex items-center text-green-500 text-[10px] font-black uppercase tracking-widest"><CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Won</span>}
-                                {bet.status === 'LOST' && <span className="flex items-center text-red-500 text-[10px] font-bold uppercase tracking-widest"><XCircle className="w-3.5 h-3.5 mr-1" /> Lost</span>}
+                            <div className="mt-4 flex items-end justify-between border-t border-gray-800/50 pt-3 pl-2">
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase text-gray-500">Stake</p>
+                                    <p className="text-sm font-mono text-white">Rs {formatCurrency(bet.amount_staked)}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[10px] font-bold uppercase text-gray-500">Return</p>
+                                    <p
+                                        className={`text-lg font-black font-mono ${
+                                            normalizedStatus === 'WON'
+                                                ? 'text-green-500'
+                                                : normalizedStatus === 'LOST'
+                                                    ? 'text-gray-600 line-through'
+                                                    : 'text-white'
+                                        }`}
+                                    >
+                                        Rs {formatCurrency(bet.potential_return)}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-
-                        {/* Financials */}
-                        <div className="mt-4 pt-3 border-t border-gray-800/50 flex justify-between items-end pl-2">
-                            <div>
-                                <p className="text-[10px] text-gray-500 uppercase font-bold">Stake</p>
-                                <p className="text-white font-mono text-sm">₹{parseFloat(bet.amount_staked).toFixed(2)}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-[10px] text-gray-500 uppercase font-bold">Return</p>
-                                <p className={`font-mono text-lg font-black ${
-                                    bet.status === 'WON' ? 'text-green-500' : 
-                                    bet.status === 'LOST' ? 'text-gray-600 line-through' : 
-                                    'text-white'
-                                }`}>
-                                    ₹{parseFloat(bet.potential_return).toFixed(2)}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                ))
+                    );
+                })
             )}
         </div>
     );
