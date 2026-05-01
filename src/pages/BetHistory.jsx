@@ -9,6 +9,31 @@ const formatCurrency = (value) => {
     return Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
 };
 
+const getPotentialReturn = (bet) => {
+    if (bet?.potential_return !== null && bet?.potential_return !== undefined && bet?.potential_return !== '') {
+        return formatCurrency(bet.potential_return);
+    }
+
+    const stake = Number.parseFloat(bet?.amount_staked ?? bet?.stake);
+    const odds = Number.parseFloat(bet?.odds_taken ?? bet?.odds ?? bet?.multiplier);
+
+    return Number.isFinite(stake) && Number.isFinite(odds) ? (stake * odds).toFixed(2) : '0.00';
+};
+
+const getDisplayedReturn = (bet) => {
+    const normalizedStatus = String(bet?.status || 'PENDING').toUpperCase();
+
+    if (normalizedStatus === 'WON') {
+        return formatCurrency(bet?.actual_return ?? getPotentialReturn(bet));
+    }
+
+    if (normalizedStatus === 'LOST') {
+        return '0.00';
+    }
+
+    return getPotentialReturn(bet);
+};
+
 const formatStatusLabel = (status) => {
     const normalizedStatus = String(status || 'PENDING').toUpperCase();
 
@@ -179,9 +204,7 @@ const BetHistory = () => {
                                 const formattedSelection = formatSelectionLabel(bet?.selection);
                                 const stakeAmount = formatCurrency(bet?.amount_staked ?? bet?.stake);
                                 const oddsValue = formatCurrency(bet?.odds_taken ?? bet?.odds ?? bet?.multiplier);
-                                const returnAmount = normalizedStatus === 'WON'
-                                    ? formatCurrency(bet?.potential_return)
-                                    : '0.00';
+                                const returnAmount = getDisplayedReturn(bet);
                                 const betKey = bet?.id ?? `${bet?.created_at || 'bet'}-${index}`;
 
                                 return (
@@ -214,7 +237,15 @@ const BetHistory = () => {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-[9px] font-bold uppercase text-gray-500">Return</p>
-                                                <p className={`font-mono font-black ${normalizedStatus === 'WON' ? 'text-green-500' : 'text-gray-400'}`}>
+                                                <p
+                                                    className={`font-mono font-black ${
+                                                        normalizedStatus === 'WON'
+                                                            ? 'text-green-500'
+                                                            : normalizedStatus === 'LOST'
+                                                                ? 'text-gray-400'
+                                                                : 'text-white'
+                                                    }`}
+                                                >
                                                     Rs {returnAmount}
                                                 </p>
                                             </div>

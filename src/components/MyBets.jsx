@@ -7,6 +7,31 @@ const formatCurrency = (value) => {
     return Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
 };
 
+const getPotentialReturn = (bet) => {
+    if (bet?.potential_return !== null && bet?.potential_return !== undefined && bet?.potential_return !== '') {
+        return formatCurrency(bet.potential_return);
+    }
+
+    const stake = Number.parseFloat(bet?.amount_staked);
+    const odds = Number.parseFloat(bet?.odds_taken ?? bet?.odds ?? bet?.multiplier);
+
+    return Number.isFinite(stake) && Number.isFinite(odds) ? (stake * odds).toFixed(2) : '0.00';
+};
+
+const getDisplayedReturn = (bet) => {
+    const normalizedStatus = String(bet?.status || 'PENDING').toUpperCase();
+
+    if (normalizedStatus === 'WON') {
+        return formatCurrency(bet?.actual_return ?? getPotentialReturn(bet));
+    }
+
+    if (normalizedStatus === 'LOST') {
+        return '0.00';
+    }
+
+    return getPotentialReturn(bet);
+};
+
 const MyBets = () => {
     const [bets, setBets] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -87,6 +112,7 @@ const MyBets = () => {
             ) : (
                 bets.map((bet) => {
                     const normalizedStatus = String(bet.status || '').toUpperCase();
+                    const returnAmount = getDisplayedReturn(bet);
 
                     return (
                         <div key={bet.id} className="group relative overflow-hidden rounded-lg border border-gray-800 bg-cric-dark p-4 shadow-lg">
@@ -150,7 +176,7 @@ const MyBets = () => {
                                                     : 'text-white'
                                         }`}
                                     >
-                                        Rs {formatCurrency(bet.potential_return)}
+                                        Rs {returnAmount}
                                     </p>
                                 </div>
                             </div>
