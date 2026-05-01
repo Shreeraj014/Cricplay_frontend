@@ -19,6 +19,10 @@ body {
   min-height: 100vh;
 }
 
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

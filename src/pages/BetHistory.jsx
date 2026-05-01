@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import BottomNav from '../components/BottomNav';
 
 const BetHistory = () => {
     const [bets, setBets] = useState([]);
@@ -44,7 +45,7 @@ const BetHistory = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] px-3 py-4 pb-24 text-white sm:px-4">
+        <div className="min-h-screen bg-[#0a0a0a] px-3 py-4 pb-20 text-white sm:px-4">
             <div className="mx-auto w-full max-w-4xl">
                 <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4">
                     <button onClick={() => navigate(-1)} className="rounded-full border border-gray-800 bg-[#1a1c23] p-2">
@@ -96,6 +97,8 @@ const BetHistory = () => {
                     </div>
                 )}
             </div>
+
+            <BottomNav />
         </div>
     );
 };

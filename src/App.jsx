@@ -12,6 +12,7 @@ function App() {
             <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/admin" element={<Dashboard />} />
+                <Route path="/sports" element={<Dashboard />} />
                 <Route path="/bet-history" element={<BetHistory />} />
                 <Route path="/transactions" element={<TransactionHistory />} />
                 <Route path="/deposit-requests" element={<DepositRequestList />} />

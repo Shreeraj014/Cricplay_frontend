@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DepositModal from '../components/DepositModal';
 import WithdrawModal from '../components/WithdrawModal';
+import BottomNav from '../components/BottomNav';
 
 const AccountSettings = () => {
     const navigate = useNavigate();
@@ -72,7 +73,7 @@ const AccountSettings = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] px-3 py-4 pb-24 text-white sm:px-4">
+        <div className="min-h-screen bg-[#0a0a0a] px-3 py-4 pb-20 text-white sm:px-4">
             <div className="mx-auto w-full max-w-3xl">
                 <div className="mb-6 flex items-center gap-3 sm:mb-8 sm:gap-4">
                     <button onClick={() => navigate(-1)} className="rounded-full border border-gray-800 bg-[#1a1c23] p-2">
@@ -129,6 +130,7 @@ const AccountSettings = () => {
                 <DepositModal isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />
             ) : null}
             <WithdrawModal isOpen={isWithdrawOpen} onClose={() => setIsWithdrawOpen(false)} />
+            <BottomNav />
         </div>
     );
 };

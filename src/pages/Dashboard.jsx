@@ -1,11 +1,11 @@
 import React from 'react';
-import { Home, Trophy, List, User } from 'lucide-react';
 import Header from '../components/Header';
 import DashboardContent from '../components/Dashboard';
+import BottomNav from '../components/BottomNav';
 
 const Dashboard = () => {
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white pb-24 lg:pb-0">
+        <div className="min-h-screen bg-[#0a0a0a] pb-20 text-white lg:pb-0">
             <Header />
 
             <div className="mx-auto mt-2 w-full max-w-7xl px-2 sm:px-3 lg:mt-4 lg:px-4">
@@ -37,24 +37,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between border-t border-gray-800 bg-cric-dark px-4 py-2.5 lg:hidden">
-                <div className="flex flex-col items-center text-cric-green">
-                    <Home className="h-5 w-5" />
-                    <span className="mt-1 text-[10px]">Home</span>
-                </div>
-                <div className="flex flex-col items-center text-gray-500">
-                    <Trophy className="h-5 w-5" />
-                    <span className="mt-1 text-[10px]">Sports</span>
-                </div>
-                <div className="flex flex-col items-center text-gray-500">
-                    <List className="h-5 w-5" />
-                    <span className="mt-1 text-[10px]">My Bets</span>
-                </div>
-                <div className="flex flex-col items-center text-gray-500">
-                    <User className="h-5 w-5" />
-                    <span className="mt-1 text-[10px]">Account</span>
-                </div>
-            </nav>
+            <BottomNav />
         </div>
     );
 };
