@@ -9,6 +9,7 @@ const DepositModal = ({ isOpen, onClose }) => {
     const [transferType, setTransferType] = useState('IMPS');
     const [utr, setUtr] = useState('');
     const [screenshot, setScreenshot] = useState(null);
+    const [errorMsg, setErrorMsg] = useState('');
     const [copied, setCopied] = useState(false);
     const [activeAccount, setActiveAccount] = useState(null);
 
@@ -26,6 +27,11 @@ const DepositModal = ({ isOpen, onClose }) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleFileChange = (e) => {
+        setScreenshot(e.target.files?.[0] || null);
+        setErrorMsg('');
     };
 
     const getDepositErrorMessage = (errorData) => {
@@ -60,18 +66,22 @@ const DepositModal = ({ isOpen, onClose }) => {
             return;
         }
 
+        if (!screenshot) {
+            setErrorMsg('Please upload a payment screenshot to proceed.');
+            return;
+        }
+
         try {
             const formData = new FormData();
             formData.append('amount', amount);
             formData.append('utr_number', normalizedUtr);
             formData.append('method', method);
             formData.append('transferType', transferType);
-            if (screenshot) {
-                formData.append('screenshot', screenshot);
-            }
+            formData.append('screenshot', screenshot);
 
             await axios.post('/api/deposit-request/', formData, {
                 headers: {
+                    'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`
                 }
             });
@@ -224,10 +234,17 @@ const DepositModal = ({ isOpen, onClose }) => {
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => setScreenshot(e.target.files?.[0] || null)}
+                                    onChange={handleFileChange}
+                                    required
                                     className="w-full rounded border border-gray-700 bg-gray-900 p-2 text-white"
                                 />
                             </div>
+
+                            {errorMsg && (
+                                <p className="text-center text-sm text-red-500">
+                                    {errorMsg}
+                                </p>
+                            )}
 
                             <button 
                                 onClick={submitDeposit}
