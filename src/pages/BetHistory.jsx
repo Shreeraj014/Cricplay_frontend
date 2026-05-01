@@ -34,6 +34,8 @@ const getDisplayedReturn = (bet) => {
     return getPotentialReturn(bet);
 };
 
+const hasTargetOver = (bet) => bet?.target_over !== null && bet?.target_over !== undefined;
+
 const formatStatusLabel = (status) => {
     const normalizedStatus = String(status || 'PENDING').toUpperCase();
 
@@ -217,9 +219,14 @@ const BetHistory = () => {
                                                 <h3 className="text-base font-black italic uppercase sm:text-lg">
                                                     {formattedSelection}
                                                 </h3>
-                                                <p className="mt-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">
-                                                    {bet?.market_type || 'Match Winner'}
-                                                </p>
+                                                <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                                                    <span>{bet?.market_type || 'Match Winner'}</span>
+                                                    {hasTargetOver(bet) && (
+                                                        <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[9px] font-black tracking-widest text-blue-300">
+                                                            Over {bet.target_over}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <span className={`w-fit rounded-full border px-3 py-1 text-[10px] font-black uppercase ${getStatusStyle(normalizedStatus)}`}>
                                                 {formatStatusLabel(normalizedStatus)}

@@ -32,6 +32,8 @@ const getDisplayedReturn = (bet) => {
     return getPotentialReturn(bet);
 };
 
+const hasTargetOver = (bet) => bet?.target_over !== null && bet?.target_over !== undefined;
+
 const MyBets = () => {
     const [bets, setBets] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -131,10 +133,15 @@ const MyBets = () => {
                                     <h4 className="text-sm font-black uppercase tracking-tight text-white">
                                         {bet.match_title}
                                     </h4>
-                                    <div className="mt-1 flex items-center space-x-2">
+                                    <div className="mt-1 flex flex-wrap items-center gap-2">
                                         <span className="rounded bg-gray-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-300">
                                             {bet.market_type}
                                         </span>
+                                        {hasTargetOver(bet) && (
+                                            <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-blue-300">
+                                                Over {bet.target_over}
+                                            </span>
+                                        )}
                                         <span className="text-[10px] text-gray-500">
                                             {new Date(bet.created_at).toLocaleString([], { month: 'short', day: 'numeric' })}
                                         </span>
