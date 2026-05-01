@@ -6,21 +6,43 @@ import BottomNav from '../components/BottomNav';
 
 const DepositRequestList = () => {
     const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchRequests = async () => {
-            const token = localStorage.getItem('access_token');
-            const res = await axios.get('/api/my-deposits/', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setRequests(
-                Array.isArray(res.data)
-                    ? res.data
-                    : Array.isArray(res.data?.results)
-                        ? res.data.results
-                        : []
-            );
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+
+            if (!token) {
+                setError('Please login to view your deposit requests.');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const res = await axios.get('/api/my-deposits/', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setRequests(
+                    Array.isArray(res.data)
+                        ? res.data
+                        : Array.isArray(res.data?.results)
+                            ? res.data.results
+                            : []
+                );
+                setError('');
+            } catch (err) {
+                console.error('Error fetching deposit requests:', err.response?.data || err.message);
+                setRequests([]);
+                setError(
+                    err.response?.status === 401
+                        ? 'Your session has expired. Please log out and log back in to continue.'
+                        : ''
+                );
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchRequests();
@@ -36,7 +58,16 @@ const DepositRequestList = () => {
                     <h1 className="text-lg font-black uppercase italic tracking-wide sm:text-xl sm:tracking-widest">My Deposits</h1>
                 </div>
 
-                <div className="space-y-4">
+                {loading ? (
+                    <div className="py-10 text-center font-mono text-gray-500 animate-pulse">Loading deposit requests...</div>
+                ) : error ? (
+                    <div className="rounded-xl border border-red-900/30 bg-red-900/10 py-10 text-center font-bold text-red-500">{error}</div>
+                ) : requests.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-gray-800 bg-[#121417] py-16 text-center text-gray-500">
+                        No deposit requests found.
+                    </div>
+                ) : (
+                    <div className="space-y-4">
                     {requests?.map((req) => (
                         <div key={req.id} className="rounded-2xl border border-gray-800 bg-[#121417] p-4 sm:p-5">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -63,7 +94,8 @@ const DepositRequestList = () => {
                             </div>
                         </div>
                     ))}
-                </div>
+                    </div>
+                )}
             </div>
 
             <BottomNav />

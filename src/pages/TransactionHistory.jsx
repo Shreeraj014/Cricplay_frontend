@@ -6,21 +6,43 @@ import BottomNav from '../components/BottomNav';
 
 const TransactionHistory = () => {
     const [txs, setTxs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchTxs = async () => {
-            const token = localStorage.getItem('access_token');
-            const res = await axios.get('/api/transactions/', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setTxs(
-                Array.isArray(res.data)
-                    ? res.data
-                    : Array.isArray(res.data?.results)
-                        ? res.data.results
-                        : []
-            );
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+
+            if (!token) {
+                setError('Please login to view your transaction history.');
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const res = await axios.get('/api/transactions/', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setTxs(
+                    Array.isArray(res.data)
+                        ? res.data
+                        : Array.isArray(res.data?.results)
+                            ? res.data.results
+                            : []
+                );
+                setError('');
+            } catch (err) {
+                console.error('Error fetching transactions:', err.response?.data || err.message);
+                setTxs([]);
+                setError(
+                    err.response?.status === 401
+                        ? 'Your session has expired. Please log out and log back in to continue.'
+                        : ''
+                );
+            } finally {
+                setLoading(false);
+            }
         };
 
         fetchTxs();
@@ -36,7 +58,16 @@ const TransactionHistory = () => {
                     <h1 className="text-lg font-black uppercase italic tracking-wide sm:text-xl sm:tracking-widest">Transaction History</h1>
                 </div>
 
-                <div className="space-y-3">
+                {loading ? (
+                    <div className="py-10 text-center font-mono text-gray-500 animate-pulse">Loading transactions...</div>
+                ) : error ? (
+                    <div className="rounded-xl border border-red-900/30 bg-red-900/10 py-10 text-center font-bold text-red-500">{error}</div>
+                ) : txs.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-gray-800 bg-[#121417] py-16 text-center text-gray-500">
+                        No transactions found.
+                    </div>
+                ) : (
+                    <div className="space-y-3">
                     {txs?.map((tx) => (
                         <div key={tx.id} className="rounded-xl border border-gray-800 bg-[#121417] p-4">
                             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -55,7 +86,8 @@ const TransactionHistory = () => {
                             </div>
                         </div>
                     ))}
-                </div>
+                    </div>
+                )}
             </div>
 
             <BottomNav />
