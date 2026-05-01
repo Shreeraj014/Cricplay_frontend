@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Landmark, ShieldCheck, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 
+const MIN_WITHDRAWAL_AMOUNT = 1000;
+
 const WithdrawModal = ({ isOpen, onClose }) => {
     const [step, setStep] = useState('list'); // 'list' or 'add'
     const [savedAccounts, setSavedAccounts] = useState([]);
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [amount, setAmount] = useState('');
+    const [errorMsg, setErrorMsg] = useState('');
     
     // Form State for new bank
     const [newBank, setNewBank] = useState({
@@ -20,6 +23,7 @@ const WithdrawModal = ({ isOpen, onClose }) => {
         if (isOpen) {
             fetchBanks();
             setStep('list');
+            setErrorMsg('');
         }
     }, [isOpen]);
 
@@ -69,9 +73,28 @@ const WithdrawModal = ({ isOpen, onClose }) => {
     };
 
     const handleWithdraw = () => {
+        setErrorMsg('');
         const token = localStorage.getItem('access_token');
+
+        if (!token) {
+            setErrorMsg("Authentication missing. Please login again.");
+            return;
+        }
+
+        const withdrawalAmount = Number(amount);
+
+        if (!Number.isFinite(withdrawalAmount) || withdrawalAmount < MIN_WITHDRAWAL_AMOUNT) {
+            setErrorMsg(`Minimum withdrawal amount is ${MIN_WITHDRAWAL_AMOUNT}.`);
+            return;
+        }
+
+        if (!selectedAccount) {
+            setErrorMsg("Please select a bank account.");
+            return;
+        }
+
         axios.post('/api/request-withdrawal/', {
-            amount: amount,
+            amount: withdrawalAmount,
             bank_id: selectedAccount
         }, {
             headers: { Authorization: `Bearer ${token}` }
@@ -80,12 +103,13 @@ const WithdrawModal = ({ isOpen, onClose }) => {
             alert("Withdrawal Request Placed!");
             onClose();
             setAmount('');
+            setErrorMsg('');
         })
         .catch(err => {
             if (err.response && err.response.status === 401) {
                 alert("Your session has expired. Please log out and log back in to continue.");
             } else {
-                alert(err.response?.data?.error || "Error placing request");
+                setErrorMsg(err.response?.data?.error || "Error placing request");
             }
         });
     };
@@ -113,7 +137,10 @@ const WithdrawModal = ({ isOpen, onClose }) => {
                                 {savedAccounts?.map(acc => (
                                     <div 
                                         key={acc.id}
-                                        onClick={() => setSelectedAccount(acc.id)}
+                                        onClick={() => {
+                                            setSelectedAccount(acc.id);
+                                            setErrorMsg('');
+                                        }}
                                         className={`p-4 rounded-lg border transition-all cursor-pointer ${
                                             selectedAccount === acc.id ? 'border-red-500 bg-red-500/5' : 'border-gray-800 bg-black/40'
                                         }`}
@@ -139,14 +166,27 @@ const WithdrawModal = ({ isOpen, onClose }) => {
                             <div className="space-y-2">
                                 <label className="text-[10px] text-gray-500 font-bold uppercase">Amount to Withdraw</label>
                                 <input 
-                                    type="number" value={amount} onChange={(e) => setAmount(e.target.value)}
-                                    placeholder="Min: 1000" className="w-full bg-black border border-gray-800 p-4 rounded text-white font-mono text-xl focus:border-red-500 outline-none"
+                                    type="number"
+                                    min={MIN_WITHDRAWAL_AMOUNT}
+                                    value={amount}
+                                    onChange={(e) => {
+                                        setAmount(e.target.value);
+                                        setErrorMsg('');
+                                    }}
+                                    placeholder={`Min: ${MIN_WITHDRAWAL_AMOUNT}`}
+                                    className="w-full bg-black border border-gray-800 p-4 rounded text-white font-mono text-xl focus:border-red-500 outline-none"
                                 />
                             </div>
 
+                            {errorMsg && (
+                                <p className="text-center text-sm font-bold text-red-500">
+                                    {errorMsg}
+                                </p>
+                            )}
+
                             <button 
-                                onClick={handleWithdraw} disabled={!selectedAccount || !amount}
-                                className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-lg shadow-lg active:scale-95 transition-all disabled:opacity-30 uppercase tracking-widest"
+                                onClick={handleWithdraw}
+                                className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-lg shadow-lg active:scale-95 transition-all uppercase tracking-widest"
                             >
                                 Request Withdrawal
                             </button>
