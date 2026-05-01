@@ -723,7 +723,7 @@ const Dashboard = () => {
                 </div>
             ) : (
                 <>
-                    <div className="mb-6 flex gap-3 overflow-x-auto pb-2">
+                    <div className="mb-6 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                         <button
                             onClick={() => setActiveCategory('match_winner')}
                             className={`flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all ${
@@ -748,18 +748,26 @@ const Dashboard = () => {
                         </button>
                     </div>
 
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                        <div className="min-w-0 flex-1 space-y-4">
-                        {matches?.map((match) => {
-                            const activeSessions = Array.isArray(match.sessions)
-                                ? match.sessions.filter((s) => !s.is_completed)
-                                : [];
+                    <div className="w-full">
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                            <div
+                                className={`col-span-1 rounded-xl border border-gray-800 bg-[#121212] p-4 shadow-lg transition-all ${
+                                    activeCategory === 'match_winner'
+                                        ? 'order-1 ring-1 ring-blue-500/40 lg:order-none'
+                                        : 'order-2 opacity-90 lg:order-none lg:opacity-100'
+                                }`}
+                            >
+                                <div className="mb-4 flex items-end justify-between gap-3">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-400">Match Winner</p>
+                                        <h3 className="mt-1 text-sm font-black uppercase tracking-wide text-white">Match Info & Winner Odds</h3>
+                                    </div>
+                                    <span className="text-[9px] font-bold uppercase italic text-gray-500">Primary market</span>
+                                </div>
 
-                            return (
-                            <div key={match.id} className="relative overflow-hidden rounded-xl border border-gray-800 bg-[#121417] shadow-lg">
-                                <div className="flex flex-col lg:flex-row lg:overflow-hidden">
-                                    <div className="w-full border-b border-gray-800 lg:w-[320px] lg:flex-shrink-0 lg:border-b-0 lg:border-r lg:border-gray-800">
-                                        <div className="flex flex-col gap-4 bg-[#0f1115] p-3 sm:p-5 lg:sticky lg:top-24">
+                                <div className="space-y-4 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                    {matches.map((match) => (
+                                        <div key={match.id} className="rounded-xl border border-gray-800 bg-[#0f1115] p-4">
                                             <div className="flex items-center justify-between gap-3">
                                                 <div className="flex min-w-0 items-center gap-2">
                                                     <Trophy className="h-4 w-4 text-yellow-500" />
@@ -771,7 +779,7 @@ const Dashboard = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="text-center">
+                                            <div className="mt-4 text-center">
                                                 <h2 className="mb-2 text-lg font-black text-white sm:text-xl">{match.title}</h2>
                                                 {match.status === 'live' && match.batting_team ? (
                                                     <div className="inline-block rounded-lg border border-gray-800 bg-black/40 px-4 py-2 sm:px-6">
@@ -781,50 +789,68 @@ const Dashboard = () => {
                                                     <p className="font-mono text-xs text-gray-500 sm:text-sm">{new Date(match.match_time).toLocaleString()}</p>
                                                 )}
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    <div className="min-w-0 flex-1 p-3 sm:p-5 lg:max-h-[calc(100vh-9.5rem)] lg:overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                                        {activeCategory === 'match_winner' && (
-                                            <div className="rounded-xl border border-gray-800 bg-[#1e1e24] p-4">
-                                                <div className="mb-4 flex items-end justify-between gap-3 border-l-4 border-blue-500 pl-2">
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Match Winner</p>
-                                                    <span className="text-[8px] font-bold uppercase italic text-gray-500">Primary market</span>
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <button
-                                                        onClick={() => handleOddsClick(match, `${match.team1_name} to Win`, match.team1_odds)}
-                                                        className="flex w-full items-center justify-between rounded-md bg-[#72bbed] px-4 py-3 font-bold text-black transition-all hover:bg-[#5daee3] active:scale-95"
-                                                    >
-                                                        <span className="mr-2 truncate">{match.team1_name}</span>
-                                                        <span>{parseFloat(match.team1_odds || 1.9).toFixed(2)}</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleOddsClick(match, `${match.team2_name} to Win`, match.team2_odds)}
-                                                        className="flex w-full items-center justify-between rounded-md bg-[#faa9ba] px-4 py-3 font-bold text-black transition-all hover:bg-[#f992a7] active:scale-95"
-                                                    >
-                                                        <span className="mr-2 truncate">{match.team2_name}</span>
-                                                        <span>{parseFloat(match.team2_odds || 1.9).toFixed(2)}</span>
-                                                    </button>
-                                                </div>
+                                            <div className="mt-4 space-y-2">
+                                                <button
+                                                    onClick={() => handleOddsClick(match, `${match.team1_name} to Win`, match.team1_odds)}
+                                                    className="flex w-full items-center justify-between rounded-md bg-[#72bbed] px-4 py-3 font-bold text-black transition-all hover:bg-[#5daee3] active:scale-95"
+                                                >
+                                                    <span className="mr-2 truncate">{match.team1_name}</span>
+                                                    <span>{parseFloat(match.team1_odds || 1.9).toFixed(2)}</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOddsClick(match, `${match.team2_name} to Win`, match.team2_odds)}
+                                                    className="flex w-full items-center justify-between rounded-md bg-[#faa9ba] px-4 py-3 font-bold text-black transition-all hover:bg-[#f992a7] active:scale-95"
+                                                >
+                                                    <span className="mr-2 truncate">{match.team2_name}</span>
+                                                    <span>{parseFloat(match.team2_odds || 1.9).toFixed(2)}</span>
+                                                </button>
                                             </div>
-                                        )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                                        {activeCategory === 'sessions' && (
-                                            <div className="rounded-xl border border-gray-800 border-l-2 border-l-purple-500 bg-[#1e1e24] p-4">
-                                                <div className="mb-3 flex items-end justify-between gap-3 border-l-4 border-purple-600 pl-2 tracking-widest">
-                                                    <p className="text-[10px] font-black uppercase text-purple-400">Live Sessions</p>
-                                                    <span className="text-[8px] font-bold uppercase italic text-gray-500">Real-time update</span>
+                            <div
+                                className={`col-span-1 rounded-xl border border-gray-800 border-l-2 border-l-purple-500 bg-[#121212] p-4 shadow-lg transition-all ${
+                                    activeCategory === 'sessions'
+                                        ? 'order-1 ring-1 ring-purple-500/40 lg:order-none'
+                                        : 'order-2 opacity-90 lg:order-none lg:opacity-100'
+                                }`}
+                            >
+                                <div className="mb-4 flex items-end justify-between gap-3">
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-purple-400">Live Sessions</p>
+                                        <h3 className="mt-1 text-sm font-black uppercase tracking-wide text-white">Session Markets</h3>
+                                    </div>
+                                    <span className="text-[9px] font-bold uppercase italic text-gray-500">Real-time update</span>
+                                </div>
+
+                                <div className="space-y-4 lg:max-h-[calc(100vh-10rem)] lg:overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                    {matches.map((match) => {
+                                        const activeSessions = Array.isArray(match.sessions)
+                                            ? match.sessions.filter((s) => !s.is_completed)
+                                            : [];
+
+                                        return (
+                                            <div key={match.id} className="rounded-xl border border-gray-800 bg-[#0f1115] p-4">
+                                                <div className="mb-3 flex items-center justify-between gap-3">
+                                                    <div>
+                                                        <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-500">{match.league}</p>
+                                                        <h4 className="mt-1 text-sm font-black uppercase tracking-wide text-white">{match.title}</h4>
+                                                    </div>
+                                                    <span className={`rounded-full px-2 py-1 text-[9px] font-black uppercase ${match.status === 'live' ? 'bg-red-500/10 text-red-400' : 'bg-gray-800 text-gray-400'}`}>
+                                                        {match.status}
+                                                    </span>
                                                 </div>
 
                                                 <div className="overflow-hidden rounded-xl border border-gray-800 bg-black/30">
-                                                    {activeSessions?.map(s => (
+                                                    {activeSessions.map((s) => (
                                                         <div key={s.id} className="relative border-b border-gray-800/50 last:border-0">
                                                             {s.is_locked && (
                                                                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 backdrop-blur-[1px]">
                                                                     <span className="flex items-center gap-1 rounded bg-red-600 px-2 py-1 text-[9px] font-black uppercase text-white shadow-lg">
-                                                                        <Lock className="h-3 w-3"/> Session Closed
+                                                                        <Lock className="h-3 w-3" /> Session Closed
                                                                     </span>
                                                                 </div>
                                                             )}
@@ -862,32 +888,30 @@ const Dashboard = () => {
                                                     )}
                                                 </div>
                                             </div>
-                                        )}
-                                    </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                            );
-                        })}
-                        </div>
 
-                        <aside className="w-full lg:w-[350px] lg:flex-shrink-0">
-                            <div className="overflow-hidden rounded-2xl border border-gray-800 bg-[#121417] shadow-xl lg:sticky lg:top-24">
-                                <div className="border-b border-gray-800 bg-[#0f1115] p-4">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Dashboard Panel</p>
-                                            <h3 className="mt-1 text-base font-black uppercase tracking-wide text-white">Recent Bets</h3>
+                            <aside className="col-span-1 order-3 self-start">
+                                <div className="overflow-hidden rounded-2xl border border-gray-800 bg-[#121417] shadow-xl lg:sticky lg:top-24">
+                                    <div className="border-b border-gray-800 bg-[#0f1115] p-4">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-500">Dashboard Panel</p>
+                                                <h3 className="mt-1 text-base font-black uppercase tracking-wide text-white">Recent Bets</h3>
+                                            </div>
+                                            <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-green-300">
+                                                Live Slip
+                                            </span>
                                         </div>
-                                        <span className="rounded-full border border-green-500/20 bg-green-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-green-300">
-                                            Live Slip
-                                        </span>
+                                    </div>
+                                    <div className="p-4 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                                        <MyBets />
                                     </div>
                                 </div>
-                                <div className="p-4 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                                    <MyBets />
-                                </div>
-                            </div>
-                        </aside>
+                            </aside>
+                        </div>
                     </div>
                 </>
             )}
